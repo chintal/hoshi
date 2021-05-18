@@ -12,6 +12,8 @@ from babel.messages.pofile import read_po
 from babel.messages.pofile import write_po
 from babel.messages.mofile import write_mo
 
+from .translation import StrictTranslations
+from .translation import TranslationMissingError
 
 try:
     from twisted import logger
@@ -19,39 +21,8 @@ except ImportError:
     logger = None
 
 
-def mtime(filepath):
+def _mtime(filepath):
     return os.path.getmtime(filepath)
-
-
-indian_languages = [
-    'en_IN',  # English
-    'hi_IN',  # Hindi
-    'te_IN',  # Telugu
-    'ta_IN',  # Tamil
-    'bn_IN',  # Bengali
-    'pa_IN',  # Punjabi
-    'ur_IN',  # Urdu
-    'kn_IN',  # Kannada
-    'or_IN',  # Oriya
-    'gu_IN',  # Gujarati
-    'ml_IN',  # Malayalam
-]
-
-
-class TranslationMissingError(Exception):
-    def __init__(self, msg):
-        self._msg = msg
-
-
-class FailingFallback(gettext.NullTranslations):
-    def gettext(self, msg):
-        raise TranslationMissingError(msg)
-
-
-class StrictTranslations(gettext.GNUTranslations, object):
-    def __init__(self, *args, **kwargs):
-        super(StrictTranslations, self).__init__(*args, **kwargs)
-        self.add_fallback(FailingFallback())
 
 
 class TranslationManager(object):
@@ -80,7 +51,7 @@ class TranslationManager(object):
     def log(self):
         if not self._log:
             if self._twisted_logging:
-                self._log = logger.Logger(namespace="i18n", source=self)
+                self._log = logger.Logger(namespace="hoshi", source=self)
             else:
                 self._log = logging.getLogger('i18n')
         return self._log
@@ -152,7 +123,7 @@ class TranslationManager(object):
         if not os.path.exists(self._po_path(*p)):
             self._create_context_lang(*p, metadata)
 
-        if mtime(self._po_path(*p)) < mtime(self._pot_path(context_name, catalog_dir)):
+        if _mtime(self._po_path(*p)) < _mtime(self._pot_path(context_name, catalog_dir)):
             self._update_context_lang(*p, metadata)
 
         with open(self._po_path(*p), 'rb') as pofile:
@@ -191,8 +162,8 @@ class TranslationManager(object):
         p = (context_name, language, catalog_dir)
 
         if not os.path.exists(self._mo_path(*p)) or \
-                mtime(self._mo_path(*p)) < mtime(self._po_path(*p)) or \
-                mtime(self._mo_path(*p)) < mtime(self._pot_path(context_name, catalog_dir)):
+                _mtime(self._mo_path(*p)) < _mtime(self._po_path(*p)) or \
+                _mtime(self._mo_path(*p)) < _mtime(self._pot_path(context_name, catalog_dir)):
             self._compile_context_lang(*p, metadata)
 
         translator = gettext.translation(context_name, catalog_dir,
@@ -222,7 +193,7 @@ class TranslationManager(object):
         """
         try:
             return context['i18n'](message)
-        except TranlationMissingError:
+        except TranslationMissingError:
             self.log.debug("Translation for \"{0}\" not found in context {1}"
                            "".format(message, context['name']))
             template: Catalog = context['template']
