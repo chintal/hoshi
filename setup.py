@@ -5,6 +5,7 @@ import setuptools
 _requires = [
     'babel',
     'setuptools-scm',
+    'google-cloud-translate',
 ]
 
 setuptools.setup(

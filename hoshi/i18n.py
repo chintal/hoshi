@@ -8,12 +8,15 @@ from functools import partial
 
 from babel import Locale
 from babel.messages import Catalog
+from babel.messages import Message
 from babel.messages.pofile import read_po
 from babel.messages.pofile import write_po
 from babel.messages.mofile import write_mo
 
 from .translation import StrictTranslations
 from .translation import TranslationMissingError
+
+from .translators.base import TranslationFailure
 
 try:
     from twisted import logger
@@ -33,6 +36,7 @@ class TranslationManager(object):
         self._log = None
         self._locales = {}
         self._contexts = {}
+        self._translators = []
 
     def install(self):
         for language in self._langages:
@@ -56,6 +60,10 @@ class TranslationManager(object):
                 self._log = logging.getLogger('i18n')
         return self._log
 
+    @property
+    def primary_language(self):
+        return self._locales[self._langages[0]]
+
     def install_language(self, language):
         """
         Install a single language to the application's locale set. This function uses babel
@@ -66,7 +74,7 @@ class TranslationManager(object):
         translator.
 
         It is currently not intended for languages to be installed on the fly. Do this before
-        attempting any translations.
+        creating any contexts or attempting any translations.
 
         :param language: locale code in the form 'en_US'
         """
@@ -92,6 +100,46 @@ class TranslationManager(object):
     def _mo_path(self, context_name, language, catalog_dir):
         return os.path.join(catalog_dir, language, "LC_MESSAGES", "{}.mo".format(context_name))
 
+    def _passthrough_strings(self, catalog):
+        message: Message
+        for message in catalog:
+            if message.id == '':
+                continue
+            if not message.string:
+                message.string = message.id
+
+    def install_translator(self, translator):
+        self._translators.append(translator)
+
+    def translate(self, source_language, target_language, string):
+        if len(self._translators):
+            for translator in self._translators:
+                try:
+                    return translator.translate(source_language,
+                                                target_language,
+                                                string), \
+                           translator.name
+                except TranslationFailure:
+                    continue
+            raise TranslationFailure()
+        else:
+            raise NotImplementedError
+
+    def _translate_string(self, language, string):
+        return self.translate(self.primary_language, language, string)
+
+    def _translate_strings(self, catalog):
+        self.log.warn("Translating strings for catalog {0}".format(catalog))
+        message: Message
+        for message in catalog:
+            if message.id == '':
+                continue
+            if not message.string:
+                self.log.info("Translating \"{0}\" to {1}".format(message.id, catalog.locale))
+                string, source = self._translate_string(catalog.locale, message.id)
+                message.string = string
+                message.auto_comments.append(source)
+
     def _create_context_lang(self, context_name, language, catalog_dir, metadata):
         self.log.warn("Could not find Language file {0} for {1} in {2}. Creating."
                       "".format(language, context_name, catalog_dir))
@@ -102,6 +150,13 @@ class TranslationManager(object):
             catalog = read_po(template)
             catalog.locale = language
             catalog.creation_date = datetime.datetime.now()
+            if catalog.locale == self.primary_language:
+                self._passthrough_strings(catalog)
+            else:
+                try:
+                    self._translate_strings(catalog)
+                except (NotImplementedError, TranslationFailure):
+                    pass
             with open(self._po_path(context_name, language, catalog_dir), 'wb') as target:
                 write_po(target, catalog)
 
@@ -113,6 +168,15 @@ class TranslationManager(object):
         with open(self._po_path(*p), 'rb') as po_file:
             catalog = read_po(po_file)
         catalog.update(template, no_fuzzy_matching=True)
+
+        if catalog.locale == self.primary_language:
+            self._passthrough_strings(catalog)
+        else:
+            try:
+                self._translate_strings(catalog)
+            except (NotImplementedError, TranslationFailure):
+                pass
+
         with open(self._po_path(*p), 'wb') as po_file:
             write_po(po_file, catalog)
 
