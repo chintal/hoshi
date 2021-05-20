@@ -3,6 +3,7 @@
 import os
 import logging
 import gettext
+import weakref
 import datetime
 from functools import partial
 
@@ -37,6 +38,7 @@ class TranslationManager(object):
         self._locales = {}
         self._contexts = {}
         self._context_current = {}
+        self._context_handlers = {}
         self._translators = []
 
     def install(self):
@@ -58,7 +60,7 @@ class TranslationManager(object):
             if self._twisted_logging:
                 self._log = logger.Logger(namespace="hoshi", source=self)
             else:
-                self._log = logging.getLogger('i18n')
+                self._log = logging.getLogger('hoshi')
         return self._log
 
     @property
@@ -255,16 +257,32 @@ class TranslationManager(object):
 
         if context_name not in self._context_current.keys():
             self._context_current[context_name] = ctx
+            self._context_handlers[context_name] = []
+
+    def install_change_handler(self, context_name, handler):
+        self._context_handlers[context_name].append(weakref.ref(handler))
 
     def set_language(self, context_name, language, fallback=True):
-        self.log.info("Setting language for context '{0}' to {1}"
-                      "".format(context_name, language))
+        old_ctx = self._context_current[context_name]
         ctx = "{0}.{1}".format(context_name, language)
+
         if fallback and (ctx not in self._contexts.keys()):
             fallback_ctx = "{0}.{1}".format(context_name, self.primary_language)
             if fallback_ctx in self._contexts.keys():
                 ctx = fallback_ctx
+
+        if old_ctx == ctx:
+            return
+
+        self.log.info("Setting language for context '{0}' to {1}"
+                      "".format(context_name, language))
+
         self._context_current[context_name] = ctx
+
+        for handler_ref in self._context_handlers[context_name]:
+            handler = handler_ref()
+            if handler:
+                handler()
 
     def set_global_language(self, language):
         self.log.info("Setting global language to {0}".format(language))
@@ -325,3 +343,10 @@ class TranslationManager(object):
         Return the babel locale associated with the provided language.
         """
         return self._locales[language]
+
+    def current_language(self, context):
+        return self._context_current[context].rsplit('.')[-1]
+
+    def current_locale(self, context):
+        return self.locale(self.current_language(context))
+

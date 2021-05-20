@@ -51,7 +51,7 @@ print("Installed Contexts:")
 pp(tm._contexts)
 
 
-# As you application uses the translation manager to render strings, they
+# As your application uses the translation manager to render strings, they
 # are added to the catalog templates for each appropriate context / domain.
 # At each execution of the typical application, the catalogs are checked
 # during loading. If necessary, they are updated using the current templates.
@@ -63,7 +63,7 @@ for language in indian_languages:
     print(language, ":", _("Hello World"))
 
 
-# Atlernatively, it is possible to create a translator which follows the
+# Alternatively, it is possible to create a translator which follows the
 # current configured language for that context. This allows global language
 # controls to be implemented with relative ease, and more along the lines of
 # the typical gettext based implementation
@@ -77,3 +77,35 @@ for language in indian_languages:
 for language in indian_languages:
     tm.set_global_language(language)
     print(language, ":", _("Hello World"))
+
+
+# It is also possible to install a handler on a context, which can be
+# responsible for triggering any actions the application must take when the
+# context's default language changes.
+#
+# It is also possible (and probably safer) for you to manage this activity
+# from the control path which causes the language change in the first place.
+#
+# This functionality is provided for applications which are either fairly
+# small and just need a quick way to get things done, and for very complex
+# applications which may have multiple triggers for language changes.
+#
+# Note that this library will only store a weak reference to the handler
+# function you provide. If this function or the object it belongs to is
+# at risk of being garbage collected, but you still require the function
+# to be called, you must ensure that you hold a reference to it elsewhere.
+
+def change_handler():
+    print("In handler : ", _("Hello World"))
+
+
+tm.install_change_handler('test', change_handler)
+
+for language in indian_languages:
+    tm.set_language('test', language)
+
+print("Deleting change handler.")
+del change_handler
+
+for language in indian_languages:
+    tm.set_language('test', language)
