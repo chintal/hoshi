@@ -61,3 +61,19 @@ pp(tm._contexts)
 for language in indian_languages:
     _ = tm.translator('test', language)
     print(language, ":", _("Hello World"))
+
+
+# Atlernatively, it is possible to create a translator which follows the
+# current configured language for that context. This allows global language
+# controls to be implemented with relative ease, and more along the lines of
+# the typical gettext based implementation
+
+_ = tm.translator('test')
+
+for language in indian_languages:
+    tm.set_language('test', language)
+    print(language, ":", _("Hello World"))
+
+for language in indian_languages:
+    tm.set_global_language(language)
+    print(language, ":", _("Hello World"))

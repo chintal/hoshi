@@ -36,6 +36,7 @@ class TranslationManager(object):
         self._log = None
         self._locales = {}
         self._contexts = {}
+        self._context_current = {}
         self._translators = []
 
     def install(self):
@@ -252,6 +253,24 @@ class TranslationManager(object):
             'catalog': self._po_path(context_name, language, catalog_dir)
         }
 
+        if context_name not in self._context_current.keys():
+            self._context_current[context_name] = ctx
+
+    def set_language(self, context_name, language, fallback=True):
+        self.log.info("Setting language for context '{0}' to {1}"
+                      "".format(context_name, language))
+        ctx = "{0}.{1}".format(context_name, language)
+        if fallback and (ctx not in self._contexts.keys()):
+            fallback_ctx = "{0}.{1}".format(context_name, self.primary_language)
+            if fallback_ctx in self._contexts.keys():
+                ctx = fallback_ctx
+        self._context_current[context_name] = ctx
+
+    def set_global_language(self, language):
+        self.log.info("Setting global language to {0}".format(language))
+        for context in self._context_current.keys():
+            self.set_language(context, language)
+
     def _i18n_msg(self, context, message):
         """
         Translate an atomic string message using the provided context. Conversion by
@@ -286,14 +305,19 @@ class TranslationManager(object):
           - Numbers, dates, times, currencies : Locale
           - Strings : _i18n
         """
+        if isinstance(context, str):
+            context = self._contexts[self._context_current[context]]
         return self._i18n_msg(context, obj)
 
-    def translator(self, context_name, language):
+    def translator(self, context_name, language=None):
         """
         Generate and return an i18n function which uses the provided context. This
         can be used to replicate the typical _() structure.
         """
-        ctx = self._contexts["{0}.{1}".format(context_name, language)]
+        if language:
+            ctx = self._contexts["{0}.{1}".format(context_name, language)]
+        else:
+            ctx = context_name
         return partial(self._translate, ctx)
 
     def locale(self, language):
