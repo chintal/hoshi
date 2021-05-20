@@ -82,7 +82,8 @@ class TranslationManager(object):
         self.log.info("Installing Locale {0} : {1}".format(language, lle.display_name))
         self._locales[language] = lle
 
-    def _pot_path(self, context_name, catalog_dir):
+    @staticmethod
+    def _pot_path(context_name, catalog_dir):
         return os.path.join(catalog_dir, "{}.pot".format(context_name))
 
     def _create_context(self, context_name, catalog_dir, metadata):
@@ -94,13 +95,16 @@ class TranslationManager(object):
             template = Catalog(**metadata)
             write_po(target, template)
 
-    def _po_path(self, context_name, language, catalog_dir):
+    @staticmethod
+    def _po_path(context_name, language, catalog_dir):
         return os.path.join(catalog_dir, language, "LC_MESSAGES", "{}.po".format(context_name))
 
-    def _mo_path(self, context_name, language, catalog_dir):
+    @staticmethod
+    def _mo_path(context_name, language, catalog_dir):
         return os.path.join(catalog_dir, language, "LC_MESSAGES", "{}.mo".format(context_name))
 
-    def _passthrough_strings(self, catalog):
+    @staticmethod
+    def _pass_through_strings(catalog):
         message: Message
         for message in catalog:
             if message.id == '':
@@ -151,7 +155,7 @@ class TranslationManager(object):
             catalog.locale = language
             catalog.creation_date = datetime.datetime.now()
             if catalog.locale == self.primary_language:
-                self._passthrough_strings(catalog)
+                self._pass_through_strings(catalog)
             else:
                 try:
                     self._translate_strings(catalog)
@@ -160,7 +164,7 @@ class TranslationManager(object):
             with open(self._po_path(context_name, language, catalog_dir), 'wb') as target:
                 write_po(target, catalog)
 
-    def _update_context_lang(self, context_name, language, catalog_dir, metadata):
+    def _update_context_lang(self, context_name, language, catalog_dir):
         p = (context_name, language, catalog_dir)
         self.log.info("Updating po file for language {1} of {0} in {2}".format(*p))
         with open(self._pot_path(context_name, catalog_dir), 'rb') as template:
@@ -170,7 +174,7 @@ class TranslationManager(object):
         catalog.update(template, no_fuzzy_matching=True)
 
         if catalog.locale == self.primary_language:
-            self._passthrough_strings(catalog)
+            self._pass_through_strings(catalog)
         else:
             try:
                 self._translate_strings(catalog)
@@ -188,7 +192,7 @@ class TranslationManager(object):
             self._create_context_lang(*p, metadata)
 
         if _mtime(self._po_path(*p)) < _mtime(self._pot_path(context_name, catalog_dir)):
-            self._update_context_lang(*p, metadata)
+            self._update_context_lang(*p)
 
         with open(self._po_path(*p), 'rb') as pofile:
             catalog = read_po(pofile)
