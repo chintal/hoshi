@@ -291,3 +291,9 @@ class TranslationManager(object):
         """
         ctx = self._contexts["{0}.{1}".format(context_name, language)]
         return partial(self._translate, ctx)
+
+    def locale(self, language):
+        """
+        Return the babel locale associated with the provided language.
+        """
+        return self._locales[language]
