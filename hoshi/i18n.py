@@ -1,4 +1,12 @@
+#!/usr/bin/env python
+# encoding: utf-8
 
+"""
+The Translation Manager Module (:mod:`hoshi.i18n`)
+==================================================
+
+This module provides the main interfaces to ``hoshi``.
+"""
 
 import os
 import logging
@@ -19,21 +27,15 @@ from .translation import TranslationMissingError
 
 from .translators.base import TranslationFailure
 
-try:
-    from twisted import logger
-except ImportError:
-    logger = None
-
 
 def _mtime(filepath):
     return os.path.getmtime(filepath)
 
 
 class TranslationManager(object):
-    def __init__(self, supported_languages, catalog_dirs, twisted_logging=False):
+    def __init__(self, supported_languages, catalog_dirs):
         self._langages = supported_languages or ['en_US']
         self._catalog_dirs = catalog_dirs
-        self._twisted_logging = twisted_logging
         self._log = None
         self._locales = {}
         self._contexts = {}
@@ -57,10 +59,7 @@ class TranslationManager(object):
     @property
     def log(self):
         if not self._log:
-            if self._twisted_logging:
-                self._log = logger.Logger(namespace="hoshi", source=self)
-            else:
-                self._log = logging.getLogger('hoshi')
+            self._log = logging.getLogger('hoshi')
         return self._log
 
     @property
@@ -90,8 +89,8 @@ class TranslationManager(object):
         return os.path.join(catalog_dir, "{}.pot".format(context_name))
 
     def _create_context(self, context_name, catalog_dir, metadata):
-        self.log.warn("Could not find Template file for {0} in {1}. Creating."
-                      "".format(context_name, catalog_dir))
+        self.log.warning("Could not find Template file for {0} in {1}. Creating."
+                         "".format(context_name, catalog_dir))
         metadata.setdefault('project', context_name)
         metadata.setdefault('creation_date', datetime.datetime.now())
         with open(self._pot_path(context_name, catalog_dir), 'wb') as target:
@@ -136,7 +135,7 @@ class TranslationManager(object):
         return self.translate(self.primary_language, language, string)
 
     def _translate_strings(self, catalog):
-        self.log.warn("Translating strings for catalog {0}".format(catalog))
+        self.log.warning("Translating strings for catalog {0}".format(catalog))
         message: Message
         for message in catalog:
             if message.id == '':
@@ -148,8 +147,8 @@ class TranslationManager(object):
                 message.auto_comments.append(source)
 
     def _create_context_lang(self, context_name, language, catalog_dir, metadata):
-        self.log.warn("Could not find Language file {0} for {1} in {2}. Creating."
-                      "".format(language, context_name, catalog_dir))
+        self.log.warning("Could not find Language file {0} for {1} in {2}. Creating."
+                         "".format(language, context_name, catalog_dir))
         if not os.path.exists(self._pot_path(context_name, catalog_dir)):
             self._create_context(context_name, catalog_dir, metadata)
         os.makedirs(os.path.join(catalog_dir, language, "LC_MESSAGES"), exist_ok=True)
@@ -302,6 +301,7 @@ class TranslationManager(object):
             self.log.debug("Translation for \"{0}\" not found in context {1}"
                            "".format(message, context['name']))
             template: Catalog = context['template']
+            p = (*context['name'].rsplit('.'), context['catalog_dir'])
             if template.get(message):
                 return message
             self.log.info("Adding \"{0}\" to context {1}"
@@ -320,8 +320,8 @@ class TranslationManager(object):
         should dispatch to specific functions depending on the type of the object.
         If the context has special helper / preprocessing functions installed, they
         are applied here.
-          - Numbers, dates, times, currencies : Locale
-          - Strings : _i18n
+        - Numbers, dates, times, currencies : Locale
+        - Strings : _i18n
         """
         if isinstance(context, str):
             context = self._contexts[self._context_current[context]]

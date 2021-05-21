@@ -1,0 +1,33 @@
+
+i18n Landscape
+--------------
+
+The i18n landscape in Python, as in many other languages, is centered around
+`gettext <https://docs.python.org/3/library/gettext.html>`_. Various i18n
+libraries in the Python universe have to do with the static extraction of
+python strings from instrumented code to build templates for catalog templates.
+
+In order to understand this, it is required to have a basic understanding of
+the various moving parts that make up the typical i18n implementation. What
+follows is a highly simplified description, glossing over a lot of details.
+This description falls squarely in the `Lies to Children <https://en.wikipedia.org/wiki/Lie-to-children>`_ category.
+
+- At the core of i18n is the translation `catalog` files. These are the ``.po``
+  files that one often sees in a ``locale/<LANG>/LC_MESSAGES`` or similar folder.
+  This file format and folder structure carries over from the legacy ``gettext``
+  implementation that is used by more or less every language and across most
+  platforms today.
+- Each `catalog` file is associated with a specific `locale` and contains a set
+  of ``msgids``, each associated with a single ``msgstring``, i.e., the string
+  which represents the message in the language the catalog provides translations for.
+- These `catalogs` are built from `templates`, which are ``.pot`` files. These
+  files contain the same set of ``msgid``, but with a blank ``msgstring``.
+- Various i18n tools, including python libraries like `babel`, focus on building
+  these `templates`. They extract translatable strings from python code, usually by
+  some form of static analysis, and assemble them into a `template` which can then
+  be manually translated into each locale by i18n specific tools.
+
+For someone just starting out on an i18n journey, the approach can seem
+unnecessarily dense and at times non-pythonic. This package was written to
+push all of the complexity into a single pythonic entity. This is a very
+subjective goal.

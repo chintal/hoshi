@@ -108,7 +108,7 @@ for language in indian_languages:
 # to be called, you must ensure that you hold a reference to it elsewhere.
 
 def change_handler():
-    print("In handler : ", _("Hello World"))
+    print("In handler :", _("Hello World"))
 
 
 tm.install_change_handler('test', change_handler)
