@@ -51,13 +51,23 @@ print("Installed Contexts:")
 pp(tm._contexts)
 
 
-# As your application uses the translation manager to render strings, they
-# are added to the catalog templates for each appropriate context / domain.
+# As your application uses translators provided by the translation manager
+# to render strings, they are added to the catalog templates for each
+# appropriate context / domain.
+#
 # At each execution of the typical application, the catalogs are checked
-# during loading. If necessary, they are updated using the current templates.
-# If a translator is installed, then translator provided translations are also
-# included in the catalogs. These translations are often, if not almost always
-# wrong. These should be manually corrected later on.
+# during loading and are updated using the current templates, if necessary.
+#
+# If an external string translator, such as the GoogleCloudTranslator is
+# installed, then generated translations are also included in the catalogs.
+# These translations are often, if not almost always wrong. These should be
+# manually corrected later on.
+
+# Obtain a translator bound to the specified context and language, and use
+# it to render strings. Note that this is not the optimal level of
+# abstraction for most applications. It can, in principle, create the most
+# flexible implementation. But it does so by leaving a great deal of the
+# implementation to the application.
 for language in indian_languages:
     _ = tm.translator('test', language)
     print(language, ":", _("Hello World"))
@@ -66,7 +76,9 @@ for language in indian_languages:
 # Alternatively, it is possible to create a translator which follows the
 # current configured language for that context. This allows global language
 # controls to be implemented with relative ease, and more along the lines of
-# the typical gettext based implementation
+# the typical gettext based implementation. One to the two following
+# approaches likely represents the optimal level of abstraction for the
+# typical application.
 
 _ = tm.translator('test')
 
