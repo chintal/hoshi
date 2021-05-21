@@ -261,3 +261,4 @@ example/**/*.po
 .idea
 docs/_tmp
 docs/_build
+_tmp
