@@ -34,7 +34,7 @@ opinionated and often inflexible. This is a thin wrapper around
 `babel <http://babel.pocoo.org/en/latest/>`_, which you can and probably
 should use directly if you are comfortable with it.
 
-c
+
 .. raw:: latex
 
     \clearpage
