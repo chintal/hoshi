@@ -28,11 +28,10 @@
        \vspace*{\fill}
 
 
-This package provides primitives and a highly opinionated infrastructure to
-setup and manage i18n and i10n efforts for python projects. It is highly
-opinionated and often inflexible. This is a thin wrapper around
-`babel <http://babel.pocoo.org/en/latest/>`_, which you can and probably
-should use directly if you are comfortable with it.
+This package provides primitives and highly opinionated infrastructure to
+setup and manage i18n and i10n efforts for python projects. It is a thin
+wrapper around `babel <http://babel.pocoo.org/en/latest/>`_, which you can
+and probably should use directly if you are comfortable with it.
 
 
 .. raw:: latex
