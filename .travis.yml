@@ -16,7 +16,7 @@ matrix:
     - python: 3.7
       env: TOX_ENV=docs
 before_install:
-  - openssl aes-256-cbc -K $encrypted_12bdf0f74de5_key -iv $encrypted_12bdf0f74de5_iv -in hoshi-314214-4286022101ed.json.enc -out hoshi-gct.json -d
+  - openssl aes-256-cbc -K $encrypted_12bdf0f74de5_key -iv $encrypted_12bdf0f74de5_iv -in hoshi-gct.json.enc -out hoshi-gct.json -d
 
 install:
   - pip install -U pip wheel
