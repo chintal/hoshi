@@ -262,3 +262,6 @@ example/**/*.po
 docs/_tmp
 docs/_build
 _tmp
+hoshi-gct.json
+
+

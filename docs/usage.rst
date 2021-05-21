@@ -122,7 +122,7 @@ shown here or adjust it to suit your needs.
 
 >>> import os
 >>> from hoshi.translators.gcloud import GoogleCloudTranslator
->>> gcloud_json_credentials = "/opt/google-cloud-sdk/hoshi-service.json"
+>>> gcloud_json_credentials = "hoshi-gct.json"
 >>> if os.path.exists(gcloud_json_credentials):
 ...     tm.install_translator(GoogleCloudTranslator(credentials=gcloud_json_credentials))
 
