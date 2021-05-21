@@ -5,8 +5,9 @@
 Google Cloud Translator Adapter (:mod:`hoshi.translators.gcloud`)
 =================================================================
 
-This module provides the the adapter for the integration Google Cloud Translate's
-Basic (v2) API. Note that this translator requires that you have a valid API key.
+This module provides the the adapter for the integration Google Cloud
+Translate's Basic (v2) API. Note that this translator requires that you
+have a valid API key.
 """
 
 
@@ -23,7 +24,8 @@ class GoogleCloudTranslator(TranslatorBase):
         super(GoogleCloudTranslator, self).__init__()
         self._silence_logging()
         if credentials:
-            os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', credentials)
+            os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS',
+                                  credentials)
         self._client = translate.Client()
 
     _upstream_loggers = [

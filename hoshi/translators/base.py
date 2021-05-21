@@ -24,8 +24,8 @@ class TranslatorBase(object):
     """
     def __init__(self):
         """
-        Any initialization required to start or connect to the external translator
-        should be done here.
+        Any initialization required to start or connect to the external
+        translator should be done here.
         """
         pass
 

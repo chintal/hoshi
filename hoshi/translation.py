@@ -46,4 +46,5 @@ class StrictTranslations(gettext.GNUTranslations, object):
         self.add_fallback(FailingFallback())
 
     def __repr__(self):
-        return "<{0}.{1} object>".format(self.__module__, self.__class__.__name__)
+        return "<{0}.{1} object>".format(self.__module__,
+                                         self.__class__.__name__)
