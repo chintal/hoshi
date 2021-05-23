@@ -2,12 +2,14 @@
 # encoding: utf-8
 
 """
+
 Google Cloud Translator Adapter (:mod:`hoshi.translators.gcloud`)
 =================================================================
 
 This module provides the the adapter for the integration Google Cloud
 Translate's Basic (v2) API. Note that this translator requires that you
 have a valid API key.
+
 """
 
 

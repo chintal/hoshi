@@ -3,6 +3,7 @@
 
 
 """
+
 The Language Sets Module (:mod:`hoshi.sets`)
 ============================================
 
@@ -10,6 +11,7 @@ This module provides a few convenient lists of locales which might
 generally apply in geopolitical regions. If you wish to add to these sets
 or create new ones, please feel free to create an issue or a pull request
 on github.
+
 """
 
 #: A list of major Indian languages. Known to be incomplete.

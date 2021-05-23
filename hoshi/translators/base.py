@@ -2,10 +2,12 @@
 # encoding: utf-8
 
 """
+
 External Translator Adapter Base (:mod:`hoshi.translators.base`)
 ================================================================
 
 This module provides the prototypes for integration of external translators.
+
 """
 
 import babel.core

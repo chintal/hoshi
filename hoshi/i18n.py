@@ -2,10 +2,12 @@
 # encoding: utf-8
 
 """
+
 The Translation Manager Module (:mod:`hoshi.i18n`)
 ==================================================
 
 This module provides the main interfaces to ``hoshi``.
+
 """
 
 import os
@@ -34,6 +36,20 @@ def _mtime(filepath):
 
 class TranslationManager(object):
     def __init__(self, supported_languages, catalog_dirs):
+        """
+        The TranslationManager object is the primary interface of the library
+        to application code. Most applications using hoshi will instantiate
+        this class exactly once and hold the instance in a globally
+        accessible namespace, such as the application or config object.
+
+        This class manages the translation contexts, locales, and external
+        translators.
+
+        :param supported_languages: A list of languages / locales the
+                application intends to support
+        :param catalog_dirs: A list of directories which hold the translation
+                templates and catalogs
+        """
         self._langages = supported_languages or ['en_US']
         self._catalog_dirs = catalog_dirs
         self._log = None

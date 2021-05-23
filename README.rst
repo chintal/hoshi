@@ -12,7 +12,7 @@
     :target: https://coveralls.io/github/chintal/hoshi
 
 .. image:: https://img.shields.io/codacy/grade/86c7707114cc4353bc1c57a6a4ff467f/main
-    :target: https://www.codacy.com/app/chintal/hoshi
+    :target: https://app.codacy.com/gh/chintal/hoshi
 
 .. image:: https://img.shields.io/requires/github/chintal/hoshi.svg
     :target: https://requires.io/github/chintal/hoshi/requirements
