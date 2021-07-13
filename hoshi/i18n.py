@@ -26,6 +26,7 @@ from babel.messages.pofile import read_po
 from babel.messages.pofile import write_po
 from babel.messages.mofile import write_mo
 
+from .messages import TranslatableStructuredMessage
 from .translation import StrictTranslations
 from .translation import TranslationMissingError
 
@@ -300,7 +301,8 @@ class TranslationManager(object):
             'catalog_dir': catalog_dir,
             'template': template,
             'template_path': self._pot_path(context_name, catalog_dir),
-            'catalog': self._po_path(context_name, language, catalog_dir)
+            'catalog': self._po_path(context_name, language, catalog_dir),
+            'language': language,
         }
 
         if context_name not in self._context_current.keys():
@@ -381,6 +383,8 @@ class TranslationManager(object):
             return self._i18n_msg(context, obj)
         if isinstance(obj, Number):
             return str(obj)
+        if isinstance(obj, TranslatableStructuredMessage):
+            return obj.translated(self._translate, context)
         for otype in self._object_translators.keys():
             if isinstance(obj, otype):
                 return self._object_translators[otype](obj, *args, **kwargs)
