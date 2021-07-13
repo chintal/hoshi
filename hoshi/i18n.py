@@ -11,11 +11,13 @@ This module provides the main interfaces to ``hoshi``.
 """
 
 import os
+import six
 import logging
 import gettext
 import weakref
 import datetime
 from functools import partial
+from numbers import Number
 
 from babel import Locale
 from babel.messages import Catalog
@@ -58,6 +60,17 @@ class TranslationManager(object):
         self._context_current = {}
         self._context_handlers = {}
         self._translators = []
+        self._object_translators = {}
+
+    def _install_object_translator(self, objtype, translator):
+        self._object_translators[objtype] = translator
+
+    def install_object_translator(self, objtype, translator):
+        if isinstance(objtype, list):
+            for otype in objtype:
+                self._install_object_translator(otype, translator)
+        else:
+            self._install_object_translator(objtype, translator)
 
     def install(self):
         for language in self._langages:
@@ -351,7 +364,7 @@ class TranslationManager(object):
             context['template'] = template
             return message
 
-    def _translate(self, context, obj):
+    def _translate(self, context, obj, *args, **kwargs):
         """
         Translate a translatable object using the provided context. This
         function should dispatch to specific functions depending on the type
@@ -360,9 +373,19 @@ class TranslationManager(object):
         - Numbers, dates, times, currencies : Locale
         - Strings : _i18n
         """
-        if isinstance(context, str):
+        if not obj:
+            return ''
+        if isinstance(context, six.text_type):
             context = self._contexts[self._context_current[context]]
-        return self._i18n_msg(context, obj)
+        if isinstance(obj, six.text_type):
+            return self._i18n_msg(context, obj)
+        if isinstance(obj, Number):
+            return str(obj)
+        for otype in self._object_translators.keys():
+            if isinstance(obj, otype):
+                return self._object_translators[otype](obj, *args, **kwargs)
+        raise TypeError("Cannot translate {} of type {}"
+                        "".format(obj, type(obj)))
 
     def translator(self, context_name, language=None):
         """
