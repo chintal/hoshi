@@ -12,7 +12,12 @@ class TranslatableStructuredMessage(object):
             self._templates[language] = [template]
 
     def translated(self, translate, context):
-        parts = {k: translate(context, v) for k, v in self._parts.items()}
+        parts = {}
+        for k, v in self._parts.items():
+            if k == 'raw':
+                parts[k] = v
+            else:
+                parts[k] = translate(context, v)
         for template in self._templates[context['language']]:
             try:
                 return template.format(**parts)
